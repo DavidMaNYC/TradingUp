@@ -1,0 +1,6 @@
+.pac-container {
+  z-index: 10000 !important;
+}
+.pac-container::after {
+  display: none !important;
+}

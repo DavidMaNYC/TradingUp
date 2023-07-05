@@ -1,0 +1,15 @@
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start; /* Aligns items to the left */
+  font-size: 1.5em; /* Makes breadcrumb items bigger */
+}
+
+.breadcrumb-item {
+  display: flex;
+  align-items: center;
+}
+
+.breadcrumb-separator {
+  margin: 0 0.5rem;
+}
