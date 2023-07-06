@@ -92,7 +92,7 @@ const TransactionPage = () => {
     if (tabParam) {
       if (tabParam === "0") {
         setBreadcrumbs([
-          { path: `/transactions?tab=${0}`, breadcrumbName: "My Offers" },
+          { path: `/transactions?tab=${0}`, breadcrumbName: "Transactions" },
         ]);
       } else if (tabParam === "1") {
         setBreadcrumbs([
@@ -120,7 +120,7 @@ const TransactionPage = () => {
     (transaction: any) => transaction.status === "completed"
   );
   const pendingTransactions = transactions.filter(
-    (transaction: any) => transaction.status === "pending"
+    (transaction: any) => transaction.status !== "completed"
   );
   if (loading) return <LoadingScreen />;
 

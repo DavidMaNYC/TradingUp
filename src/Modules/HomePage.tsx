@@ -58,7 +58,7 @@ const HomePage = () => {
     };
 
     fetchListings();
-  }, []);
+  }, [currentUser]);
 
   const handleSearchChange = (event: any) => {
     setSearchTerm(event.target.value);

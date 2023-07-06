@@ -21,15 +21,16 @@ import { Listing } from "../Types";
 import { BreadcrumbContext } from "../Utils/BreadcrumbProvider";
 import { useNavigate } from "react-router-dom";
 
-const TradeScreen = () => {
-  const { userId } = useParams<{ userId: string }>();
+const CounterOfferPage = () => {
+  const { offerId } = useParams<{ offerId: string }>();
   const navigate = useNavigate();
   const { currentUser } = useContext(UserContext);
   const { setBreadcrumbs } = useContext(BreadcrumbContext);
   const [open, setOpen] = useState(false);
   const [otherUserItems, setOtherUserItems] = useState<Listing[]>([]);
-  const [selectedMyItems, setSelectedMyItems] = useState<string[]>([]);
-  const [selectedTheirItems, setSelectedTheirItems] = useState<string[]>([]);
+  const [mySelectedItems, setMySelectedItems] = useState<string[]>([]);
+  const [theirSelectedItems, setTheirSelectedItems] = useState<string[]>([]);
+  const [offer, setOffer] = useState<any>({});
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -41,15 +42,19 @@ const TradeScreen = () => {
 
   const handleConfirm = async () => {
     try {
-      await axios.post(
-        `${import.meta.env.VITE_APP_API_URL}/api/offer`,
+      const otherUser =
+        offer.createdBy._id !== currentUser?._id
+          ? offer.createdBy._id
+          : offer.targetUser._id;
+      await axios.patch(
+        `${import.meta.env.VITE_APP_API_URL}/api/offer/${offerId}`,
         {
           createdBy: currentUser?._id,
-          offers: selectedMyItems,
-          demands: selectedTheirItems,
-          status: "pending",
-          targetUser: userId,
-          turn: userId,
+          offers: mySelectedItems,
+          demands: theirSelectedItems,
+          targetUser: otherUser,
+          status: "countered",
+          turn: otherUser,
         },
         currentUser?.config
       );
@@ -57,20 +62,36 @@ const TradeScreen = () => {
       navigate("/transaction");
     } catch (error) {
       console.error("Failed to confirm trade:", error);
-      // Optional: Handle the error or display an error message
     }
   };
 
   useEffect(() => {
     const fetchUserListings = async () => {
+      if (!currentUser) return;
       try {
+        const offerResponse = await axios.get(
+          `${import.meta.env.VITE_APP_API_URL}/api/offer/${offerId}`,
+          currentUser?.config
+        );
+        const offer = offerResponse.data;
+        let otherUser;
+        if (offer.createdBy._id !== currentUser._id) {
+          otherUser = offer.createdBy;
+        } else if (offer.targetUser._id !== currentUser._id) {
+          otherUser = offer.targetUser;
+        }
+        setTheirSelectedItems(offer.offers.map((item: any) => item._id));
+        setMySelectedItems(offer.demands.map((item: any) => item._id));
+        setOffer(offer);
         const response = await axios.get(
-          `${import.meta.env.VITE_APP_API_URL}/api/listing/user/${userId}`,
+          `${import.meta.env.VITE_APP_API_URL}/api/listing/user/${
+            otherUser._id
+          }`,
           currentUser?.config
         );
         setBreadcrumbs([
           { path: "/", breadcrumbName: "Home" },
-          { path: "/trade", breadcrumbName: "New Offer" },
+          { path: "/counter", breadcrumbName: "Counter Offer" },
         ]);
 
         const listings = response.data;
@@ -102,7 +123,7 @@ const TradeScreen = () => {
   }, []);
 
   const handleMyItemsClick = (itemId: string) => {
-    setSelectedMyItems((prev) =>
+    setMySelectedItems((prev) =>
       prev.includes(itemId)
         ? prev.filter((id) => id !== itemId)
         : [...prev, itemId]
@@ -110,7 +131,7 @@ const TradeScreen = () => {
   };
 
   const handleTheirItemsClick = (itemId: string) => {
-    setSelectedTheirItems((prev) =>
+    setTheirSelectedItems((prev) =>
       prev.includes(itemId)
         ? prev.filter((id) => id !== itemId)
         : [...prev, itemId]
@@ -163,7 +184,7 @@ const TradeScreen = () => {
                       description={item.description}
                       location={item.location}
                       images={item.images}
-                      selected={selectedMyItems.includes(item._id || "")}
+                      selected={mySelectedItems.includes(item._id || "")}
                       onClick={() => {
                         if (item._id) handleMyItemsClick(item._id);
                       }}
@@ -202,7 +223,7 @@ const TradeScreen = () => {
                       description={item.description}
                       location={item.location}
                       images={item.images}
-                      selected={selectedTheirItems.includes(item._id || "")}
+                      selected={theirSelectedItems.includes(item._id || "")}
                       onClick={() => {
                         if (item._id) handleTheirItemsClick(item._id);
                       }}
@@ -219,7 +240,7 @@ const TradeScreen = () => {
           style={{ margin: "10px" }}
           onClick={handleClickOpen}
           disabled={
-            selectedMyItems.length === 0 || selectedTheirItems.length === 0
+            mySelectedItems.length === 0 || theirSelectedItems.length === 0
           }
         >
           Confirm Trade
@@ -250,4 +271,4 @@ const TradeScreen = () => {
   );
 };
 
-export default TradeScreen;
+export default CounterOfferPage;

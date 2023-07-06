@@ -17,6 +17,7 @@ export type Listing = {
   location: string;
   createdAt?: string;
   updatedAt?: string;
+  user: User;
 };
 
 export type GenericObject = {

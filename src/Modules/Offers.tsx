@@ -20,25 +20,50 @@ interface IOffer {
 const Offers = (props: IOffer) => {
   const { transactions } = props;
   const { currentUser } = useContext(UserContext);
-  const yourOffers = transactions.filter(
-    (transaction) => transaction?.createdBy?._id === currentUser?._id
+  const pendingItems = transactions.filter(
+    (transaction) =>
+      transaction?.turn !== currentUser?._id &&
+      transaction?.status !== "accepted" &&
+      transaction?.status !== "declined"
   );
-  const incomingOffers = transactions.filter(
-    (transaction) => transaction?.targetUser?._id === currentUser?._id
+  const actionItems = transactions.filter(
+    (transaction) =>
+      transaction?.turn === currentUser?._id &&
+      transaction?.status !== "declined"
   );
   const acceptedOffers = transactions.filter(
     (transaction) => transaction?.status === "accepted"
   );
+  const declinedOffers = transactions.filter(
+    (transaction) => transaction?.status === "declined"
+  );
   return (
     <Card elevation={0} sx={{ background: "transparent" }}>
       <CardContent>
-        {acceptedOffers.length > 0 && (
+        {actionItems.length > 0 && (
           <Accordion>
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
               <Box sx={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                <Typography>Accepted Offers</Typography>
+                <Typography>Action Required</Typography>
                 <Badge
-                  badgeContent={acceptedOffers.length}
+                  badgeContent={actionItems.length}
+                  color="error"
+                  sx={{ marginLeft: "10px" }}
+                />
+              </Box>
+            </AccordionSummary>
+            <AccordionDetails>
+              <TransactionList transactions={actionItems} isAction={true} />
+            </AccordionDetails>
+          </Accordion>
+        )}
+        {pendingItems.length > 0 && (
+          <Accordion>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Box sx={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <Typography>Pending</Typography>
+                <Badge
+                  badgeContent={pendingItems.length}
                   color="primary"
                   sx={{
                     ".MuiBadge-badge": {
@@ -51,17 +76,17 @@ const Offers = (props: IOffer) => {
               </Box>
             </AccordionSummary>
             <AccordionDetails>
-              <TransactionList transactions={acceptedOffers} />
+              <TransactionList transactions={pendingItems} swap={true} />
             </AccordionDetails>
           </Accordion>
         )}
-        {yourOffers.length > 0 && (
+        {declinedOffers.length > 0 && (
           <Accordion>
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
               <Box sx={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                <Typography>Pending Offers</Typography>
+                <Typography>Declined Offers</Typography>
                 <Badge
-                  badgeContent={yourOffers.length}
+                  badgeContent={declinedOffers.length}
                   color="primary"
                   sx={{
                     ".MuiBadge-badge": {
@@ -74,25 +99,10 @@ const Offers = (props: IOffer) => {
               </Box>
             </AccordionSummary>
             <AccordionDetails>
-              <TransactionList transactions={yourOffers} />
+              <TransactionList transactions={declinedOffers} />
             </AccordionDetails>
           </Accordion>
         )}
-        <Accordion>
-          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Box sx={{ display: "flex", alignItems: "center", gap: "10px" }}>
-              <Typography>Incoming Offers</Typography>
-              <Badge
-                badgeContent={incomingOffers.length}
-                color="error"
-                sx={{ marginLeft: "10px" }}
-              />
-            </Box>
-          </AccordionSummary>
-          <AccordionDetails>
-            <TransactionList transactions={incomingOffers} />
-          </AccordionDetails>
-        </Accordion>
       </CardContent>
     </Card>
   );

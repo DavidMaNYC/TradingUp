@@ -7,12 +7,13 @@ import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import { UserContext } from "../Utils/UserProvider";
 import axios from "axios";
 import { toast } from "react-toastify";
-import { Paper, Grid, Typography } from "@mui/material";
+import { Paper, Grid } from "@mui/material";
 import { getStorage, ref, getDownloadURL } from "firebase/storage";
 
 const Settings = () => {
   const [selectedImage, setSelectedImage] = useState<any>(null);
   const { currentUser, setLoading } = useContext(UserContext);
+  const [changes, setChanges] = useState(false);
 
   useEffect(() => {
     if (currentUser && currentUser?.avatar) {
@@ -31,6 +32,7 @@ const Settings = () => {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
     setSelectedImage(file);
+    setChanges(true);
   };
 
   const updateProfilePicture = async (file: File) => {
@@ -48,7 +50,7 @@ const Settings = () => {
           },
         }
       );
-
+      setChanges(false);
       setLoading((prev) => !prev);
     } catch (error) {
       console.error("Failed to upload profile image:", error);
@@ -85,7 +87,11 @@ const Settings = () => {
           >
             {selectedImage ? (
               <img
-                src={selectedImage.url}
+                src={
+                  selectedImage.url
+                    ? selectedImage.url
+                    : URL.createObjectURL(selectedImage)
+                }
                 alt="Profile"
                 style={{ width: "150px", height: "150px", borderRadius: "50%" }}
               />
@@ -119,6 +125,7 @@ const Settings = () => {
                 onClick={handleUpload}
                 startIcon={<CloudUploadIcon />}
                 sx={{ mt: 2 }}
+                disabled={!changes}
               >
                 Update Picture
               </Button>
@@ -138,6 +145,7 @@ const Settings = () => {
               value={currentUser ? currentUser.email : ""}
               InputProps={{ readOnly: true }}
               variant="outlined"
+              disabled
               size="medium"
               sx={{
                 minWidth: "30%",
@@ -159,6 +167,7 @@ const Settings = () => {
               value={currentUser ? currentUser.username : ""}
               InputProps={{ readOnly: true }}
               variant="outlined"
+              disabled
               size="medium"
               sx={{
                 minWidth: "30%",

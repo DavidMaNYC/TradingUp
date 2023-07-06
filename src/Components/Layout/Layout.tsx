@@ -35,7 +35,7 @@ const Layout: FC<LayoutProps> = ({ children }) => {
   const handleLogout = async () => {
     try {
       await auth.signOut();
-      console.log("User signed out");
+      console.log("You have signed out");
       navigate("/login");
     } catch (error) {
       console.error("Failed to log out:", error);

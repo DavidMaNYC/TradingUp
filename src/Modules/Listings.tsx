@@ -165,12 +165,7 @@ const Listings = () => {
       noValidate
       autoComplete="off"
     >
-      <Button
-        variant="outlined"
-        sx={{ textTransform: "none" }}
-        color="primary"
-        onClick={handleClickOpen}
-      >
+      <Button variant="outlined" color="primary" onClick={handleClickOpen}>
         Create Listing
       </Button>
       <Dialog

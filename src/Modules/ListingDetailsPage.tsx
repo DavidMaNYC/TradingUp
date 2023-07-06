@@ -1,5 +1,5 @@
 import { useState, useEffect, useContext } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import {
   Box,
   Button,
@@ -7,6 +7,7 @@ import {
   Card,
   CardContent,
   Typography,
+  Avatar,
 } from "@mui/material";
 import axios from "axios";
 import { Listing } from "../Types";
@@ -32,13 +33,13 @@ const mapCenter = {
   lng: -79.383186,
 };
 const ListingDetailsPage = () => {
-  const { id } = useParams<{ id: string }>();
+  const { listingId } = useParams<{ listingId: string }>();
   const [listing, setListing] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const { currentUser } = useContext(UserContext);
   const [location, setLocation] = useState(mapCenter);
   const { setBreadcrumbs } = useContext(BreadcrumbContext);
-
+  const navigate = useNavigate();
   const { isLoaded, loadError } = useLoadScript({
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY, // Replace with your Google Maps API key
   });
@@ -46,12 +47,15 @@ const ListingDetailsPage = () => {
     const fetchListing = async () => {
       try {
         const response = await axios.get(
-          `${import.meta.env.VITE_APP_API_URL}/api/listing/${id}`,
+          `${import.meta.env.VITE_APP_API_URL}/api/listing/${listingId}`,
           currentUser?.config
         );
         setBreadcrumbs([
           { path: "/", breadcrumbName: "Home" },
-          { path: `/listing/${id}`, breadcrumbName: response.data.title },
+          {
+            path: `/listing/${listingId}`,
+            breadcrumbName: response.data.title,
+          },
         ]);
 
         const listingData: Listing = response.data;
@@ -66,6 +70,14 @@ const ListingDetailsPage = () => {
             return { path: imagePath, url: downloadURL };
           })
         );
+        const formattedSeller = { ...listingData.user };
+        if (listingData.user.avatar) {
+          const avatarRef = ref(storage, listingData.user.avatar as any);
+          const avatarURL = await getDownloadURL(avatarRef).catch(
+            console.error
+          );
+          formattedSeller.avatar = { url: avatarURL, path: avatarRef.fullPath };
+        }
         const location = await axios.get(
           `${import.meta.env.VITE_APP_API_URL}/api/geocode/${encodeURIComponent(
             listingData?.location
@@ -73,7 +85,11 @@ const ListingDetailsPage = () => {
           currentUser?.config
         );
         setLocation(location.data.results[0].geometry.location);
-        setListing({ ...listingData, images: formattedImages });
+        setListing({
+          ...listingData,
+          user: formattedSeller,
+          images: formattedImages,
+        });
         setLoading(false);
       } catch (error) {
         console.error("Failed to fetch listing:", error);
@@ -82,7 +98,7 @@ const ListingDetailsPage = () => {
     };
 
     fetchListing();
-  }, [id]);
+  }, [listingId]);
 
   if (loading || !isLoaded || loadError || !listing) {
     return <LoadingScreen />;
@@ -117,6 +133,31 @@ const ListingDetailsPage = () => {
             </Grid>
             <Grid item xs={12} sm={6}>
               <CardContent>
+                <Grid
+                  container
+                  spacing={2}
+                  alignItems="center"
+                  onClick={() => {
+                    navigate(`/profile/${listing.user._id}`);
+                  }}
+                  sx={{ cursor: "pointer" }}
+                >
+                  <Grid item>
+                    {listing.user.avatar ? (
+                      <Avatar src={listing.user.avatar.url} alt="User Avatar" />
+                    ) : (
+                      <Avatar>{listing.user.username.charAt(0)}</Avatar>
+                    )}
+                  </Grid>
+                  <Grid item>
+                    <Typography variant="body2">
+                      {listing.user.username}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      Seller
+                    </Typography>
+                  </Grid>
+                </Grid>
                 <Typography gutterBottom variant="h5" component="div">
                   {listing.title}
                 </Typography>
@@ -130,7 +171,10 @@ const ListingDetailsPage = () => {
               <Button
                 variant="contained"
                 component={Link}
-                to={`/trade/${listing.user}`}
+                disabled={
+                  currentUser?.listings && currentUser?.listings?.length < 1
+                }
+                to={`/trade/${listing.user._id}`}
                 style={{ margin: "10px" }}
               >
                 Make Offer

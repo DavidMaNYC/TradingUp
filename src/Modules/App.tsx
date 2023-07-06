@@ -11,6 +11,9 @@ import ListingDetailsPage from "./ListingDetailsPage";
 import TradeScreen from "./TradeScreen";
 import TransactionPage from "./TransactionPage";
 import PrivateRoute from "../Components/PrivateRoute";
+import TransactionDetailPage from "./TransactionDetailPage";
+import ProfileDetailsPage from "./ProfileDetailsPage";
+import CounterOfferPage from "./CounterOfferPage";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -24,12 +27,27 @@ const App = () => {
           <Route path="/home" element={PrivateRoute(<HomePage />)} />
           <Route path="/profile" element={PrivateRoute(<ProfilePage />)} />
           <Route
+            path="/profile/:userId"
+            element={PrivateRoute(<ProfileDetailsPage />)}
+          />
+          <Route
             path="/transaction"
             element={PrivateRoute(<TransactionPage />)}
           />
-          <Route path="/trade/:id" element={PrivateRoute(<TradeScreen />)} />
           <Route
-            path="/listing/:id"
+            path="/transaction/:offerId"
+            element={PrivateRoute(<TransactionDetailPage />)}
+          />
+          <Route
+            path="/trade/:userId"
+            element={PrivateRoute(<TradeScreen />)}
+          />
+          <Route
+            path="/counter/:offerId"
+            element={PrivateRoute(<CounterOfferPage />)}
+          />
+          <Route
+            path="/listing/:listingId"
             element={PrivateRoute(<ListingDetailsPage />)}
           />
           <Route path="*" element={<Navigate to="/home" />} />
