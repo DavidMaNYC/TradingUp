@@ -24,7 +24,7 @@ import { useNavigate } from "react-router-dom";
 const TradeScreen = () => {
   const { userId } = useParams<{ userId: string }>();
   const navigate = useNavigate();
-  const { currentUser } = useContext(UserContext);
+  const { currentUser, refreshToken } = useContext(UserContext);
   const { setBreadcrumbs } = useContext(BreadcrumbContext);
   const [open, setOpen] = useState(false);
   const [otherUserItems, setOtherUserItems] = useState<Listing[]>([]);
@@ -64,6 +64,7 @@ const TradeScreen = () => {
   useEffect(() => {
     const fetchUserListings = async () => {
       try {
+        await refreshToken();
         const response = await axios.get(
           `${import.meta.env.VITE_APP_API_URL}/api/listing/user/${userId}`,
           currentUser?.config
@@ -72,7 +73,6 @@ const TradeScreen = () => {
           { path: "/", breadcrumbName: "Home" },
           { path: "/trade", breadcrumbName: "New Offer" },
         ]);
-
         const listings = response.data;
         const storage = getStorage();
         const formattedListings = await Promise.all(

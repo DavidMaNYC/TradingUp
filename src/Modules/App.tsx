@@ -15,6 +15,7 @@ import TransactionDetailPage from "./TransactionDetailPage";
 import ProfileDetailsPage from "./ProfileDetailsPage";
 import CounterOfferPage from "./CounterOfferPage";
 import { ToastContainer } from "react-toastify";
+import MessageList from "./MessageList";
 import "react-toastify/dist/ReactToastify.css";
 
 const App = () => {
@@ -26,6 +27,7 @@ const App = () => {
           <Route path="/login" element={<AuthPage />} />
           <Route path="/home" element={PrivateRoute(<HomePage />)} />
           <Route path="/profile" element={PrivateRoute(<ProfilePage />)} />
+          <Route path="/messages/*" element={PrivateRoute(<MessageList />)} />
           <Route
             path="/profile/:userId"
             element={PrivateRoute(<ProfileDetailsPage />)}

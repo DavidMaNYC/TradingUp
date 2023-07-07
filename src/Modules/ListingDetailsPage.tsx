@@ -36,7 +36,7 @@ const ListingDetailsPage = () => {
   const { listingId } = useParams<{ listingId: string }>();
   const [listing, setListing] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const { currentUser } = useContext(UserContext);
+  const { currentUser, refreshToken } = useContext(UserContext);
   const [location, setLocation] = useState(mapCenter);
   const { setBreadcrumbs } = useContext(BreadcrumbContext);
   const navigate = useNavigate();
@@ -46,6 +46,7 @@ const ListingDetailsPage = () => {
   useEffect(() => {
     const fetchListing = async () => {
       try {
+        await refreshToken();
         const response = await axios.get(
           `${import.meta.env.VITE_APP_API_URL}/api/listing/${listingId}`,
           currentUser?.config

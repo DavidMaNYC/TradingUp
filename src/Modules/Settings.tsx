@@ -27,7 +27,7 @@ const Settings = () => {
 
       setSelectedImage(currentUser?.avatar);
     }
-  }, [currentUser]);
+  }, []);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;

@@ -4,6 +4,7 @@ import "./index.css";
 import { UserProvider } from "./Utils/UserProvider";
 import { BreadcrumbProvider } from "./Utils/BreadcrumbProvider";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
+import { ConversationProvider } from "./Utils/ConversationProvider.tsx";
 const theme = createTheme({
   typography: {
     button: {
@@ -13,10 +14,12 @@ const theme = createTheme({
 });
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <UserProvider>
-    <BreadcrumbProvider>
-      <ThemeProvider theme={theme}>
-        <App />
-      </ThemeProvider>
-    </BreadcrumbProvider>
+    <ThemeProvider theme={theme}>
+      <BreadcrumbProvider>
+        <ConversationProvider>
+          <App />
+        </ConversationProvider>
+      </BreadcrumbProvider>
+    </ThemeProvider>
   </UserProvider>
 );

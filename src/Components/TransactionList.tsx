@@ -32,7 +32,7 @@ const TransactionList = ({
         },
         currentUser?.config
       );
-      navigate("/transaction");
+      navigate(0);
     } catch (error) {
       console.error("Failed to confirm trade:", error);
     }
@@ -46,7 +46,7 @@ const TransactionList = ({
         },
         currentUser?.config
       );
-      navigate("/transaction");
+      navigate(0);
     } catch (error) {
       console.error("Failed to confirm trade:", error);
     }

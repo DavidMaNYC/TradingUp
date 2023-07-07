@@ -1,5 +1,16 @@
 import { useState, useEffect, useContext } from "react";
-import { Box, Grid, Typography, Avatar } from "@mui/material";
+import {
+  Box,
+  Grid,
+  Typography,
+  Avatar,
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  TextField,
+  DialogActions,
+} from "@mui/material";
 import Layout from "../Components/Layout";
 import { useParams } from "react-router-dom";
 import { BreadcrumbContext } from "../Utils/BreadcrumbProvider";
@@ -9,18 +20,23 @@ import { UserContext } from "../Utils/UserProvider";
 import { getStorage, ref, getDownloadURL } from "firebase/storage";
 import ListingCard from "../Components/ListingCard";
 import { useNavigate } from "react-router-dom";
+import { ConversationsContext } from "../Utils/ConversationProvider";
 
 const ProfileDetailsPage = () => {
   const { userId } = useParams<{ userId: string }>();
-  const { currentUser } = useContext(UserContext);
+  const { sendMessage } = useContext(ConversationsContext);
+  const { currentUser, refreshToken } = useContext(UserContext);
   const { setBreadcrumbs } = useContext(BreadcrumbContext);
   const navigate = useNavigate();
   const [user, setUser] = useState<any>();
   const [loading, setLoading] = useState(true);
+  const [open, setOpen] = useState(false);
+  const [message, setMessage] = useState("");
 
   useEffect(() => {
     const fetchUser = async () => {
       try {
+        await refreshToken();
         const response = await axios.get(
           `${import.meta.env.VITE_APP_API_URL}/api/user/details/${userId}`,
           currentUser?.config
@@ -68,12 +84,18 @@ const ProfileDetailsPage = () => {
     };
     fetchUser();
   }, [location]);
-
+  const handleMessageSubmit = () => {
+    if (user.uid && user.uid !== currentUser?.uid) {
+      sendMessage(message, user.uid);
+      setOpen(false);
+      setMessage("");
+    }
+  };
   if (loading) return <LoadingScreen />;
 
   return (
     <Layout>
-      <Box sx={{ width: "100%", padding: "20px" }}>
+      <Box sx={{ width: "calc(100%-40px)", padding: "20px" }}>
         {user?.avatar ? (
           <Avatar
             src={user.avatar.url}
@@ -100,6 +122,18 @@ const ProfileDetailsPage = () => {
         <Typography variant="h4" sx={{ textAlign: "center" }}>
           {user?.username}
         </Typography>
+        {currentUser?._id !== user?._id && (
+          <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() => setOpen(true)}
+            >
+              Send Message
+            </Button>
+          </Box>
+        )}
+
         <Typography variant="h6" sx={{ marginBottom: "10px" }}>
           Their Listings:
         </Typography>
@@ -117,6 +151,29 @@ const ProfileDetailsPage = () => {
           ))}
         </Grid>
       </Box>
+      <Dialog open={open} onClose={() => setOpen(false)}>
+        <DialogTitle>Send a message to {user?.username}</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            margin="dense"
+            id="message"
+            label="Message"
+            type="text"
+            fullWidth
+            variant="outlined"
+            multiline
+            rows={4}
+            maxRows={6}
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpen(false)}>Cancel</Button>
+          <Button onClick={handleMessageSubmit}>Send</Button>
+        </DialogActions>
+      </Dialog>
     </Layout>
   );
 };

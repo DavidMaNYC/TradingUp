@@ -23,7 +23,7 @@ import { useNavigate } from "react-router-dom";
 
 const TransactionDetailsPage = () => {
   const { offerId } = useParams<{ offerId: string }>();
-  const { currentUser } = useContext(UserContext);
+  const { currentUser, refreshToken } = useContext(UserContext);
   const { setBreadcrumbs } = useContext(BreadcrumbContext);
   const navigate = useNavigate();
   const [transaction, setTransaction] = useState<any>(null);
@@ -65,6 +65,7 @@ const TransactionDetailsPage = () => {
         return;
       }
       try {
+        await refreshToken();
         const response = await axios.get(
           `${import.meta.env.VITE_APP_API_URL}/api/offer/${offerId}`,
           currentUser?.config
@@ -307,7 +308,7 @@ const TransactionDetailsPage = () => {
             </Box>
             {transaction?.turn === currentUser?._id &&
             (transaction.status === "pending" ||
-              transaction.status === "counter") ? (
+              transaction.status === "countered") ? (
               <Box
                 sx={{
                   display: "flex",

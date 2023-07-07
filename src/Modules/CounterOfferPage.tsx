@@ -24,7 +24,7 @@ import { useNavigate } from "react-router-dom";
 const CounterOfferPage = () => {
   const { offerId } = useParams<{ offerId: string }>();
   const navigate = useNavigate();
-  const { currentUser } = useContext(UserContext);
+  const { currentUser, refreshToken } = useContext(UserContext);
   const { setBreadcrumbs } = useContext(BreadcrumbContext);
   const [open, setOpen] = useState(false);
   const [otherUserItems, setOtherUserItems] = useState<Listing[]>([]);
@@ -69,6 +69,7 @@ const CounterOfferPage = () => {
     const fetchUserListings = async () => {
       if (!currentUser) return;
       try {
+        await refreshToken();
         const offerResponse = await axios.get(
           `${import.meta.env.VITE_APP_API_URL}/api/offer/${offerId}`,
           currentUser?.config

@@ -17,65 +17,68 @@ const TransactionPage = () => {
   const [tab, setTab] = useState(0);
   const [loading, setLoading] = useState(true);
   const { setBreadcrumbs } = useContext(BreadcrumbContext);
-  const { currentUser } = useContext(UserContext);
+  const { currentUser, refreshToken } = useContext(UserContext);
   const [transactions, setTransactions] = useState<any[]>([]);
 
   useEffect(() => {
     const fetchTransactions = async () => {
       try {
-        const response = await axios.get(
-          `${import.meta.env.VITE_APP_API_URL}/api/offer/user/${
-            currentUser?._id
-          }`,
-          currentUser?.config
-        );
-        const formattedTransactions = await Promise.all(
-          response.data.map(async (transaction: any) => {
-            const formattedOffers = await Promise.all(
-              transaction.offers.map(async (offer: any) => {
-                const formattedImages = await Promise.all(
-                  offer.images.map(async (imagePath: string) => {
-                    try {
-                      const storage = getStorage();
-                      const imageRef = ref(storage, imagePath);
-                      const downloadURL = await getDownloadURL(imageRef);
-                      return { path: imagePath, url: downloadURL };
-                    } catch (error) {
-                      console.error("Failed to fetch image:", error);
-                      return null;
-                    }
-                  })
-                );
-                return { ...offer, images: formattedImages };
-              })
-            );
-            const formattedDemands = await Promise.all(
-              transaction.demands.map(async (demand: any) => {
-                const formattedImages = await Promise.all(
-                  demand.images.map(async (imagePath: string) => {
-                    try {
-                      const storage = getStorage();
-                      const imageRef = ref(storage, imagePath);
-                      const downloadURL = await getDownloadURL(imageRef);
-                      return { path: imagePath, url: downloadURL };
-                    } catch (error) {
-                      console.error("Failed to fetch image:", error);
-                      return null;
-                    }
-                  })
-                );
-                return { ...demand, images: formattedImages };
-              })
-            );
-            return {
-              ...transaction,
-              offers: formattedOffers,
-              demands: formattedDemands,
-            };
-          })
-        );
-        setTransactions(formattedTransactions);
-        setLoading(false);
+        if (currentUser) {
+          await refreshToken();
+          const response = await axios.get(
+            `${import.meta.env.VITE_APP_API_URL}/api/offer/user/${
+              currentUser?._id
+            }`,
+            currentUser?.config
+          );
+          const formattedTransactions = await Promise.all(
+            response.data.map(async (transaction: any) => {
+              const formattedOffers = await Promise.all(
+                transaction.offers.map(async (offer: any) => {
+                  const formattedImages = await Promise.all(
+                    offer.images.map(async (imagePath: string) => {
+                      try {
+                        const storage = getStorage();
+                        const imageRef = ref(storage, imagePath);
+                        const downloadURL = await getDownloadURL(imageRef);
+                        return { path: imagePath, url: downloadURL };
+                      } catch (error) {
+                        console.error("Failed to fetch image:", error);
+                        return null;
+                      }
+                    })
+                  );
+                  return { ...offer, images: formattedImages };
+                })
+              );
+              const formattedDemands = await Promise.all(
+                transaction.demands.map(async (demand: any) => {
+                  const formattedImages = await Promise.all(
+                    demand.images.map(async (imagePath: string) => {
+                      try {
+                        const storage = getStorage();
+                        const imageRef = ref(storage, imagePath);
+                        const downloadURL = await getDownloadURL(imageRef);
+                        return { path: imagePath, url: downloadURL };
+                      } catch (error) {
+                        console.error("Failed to fetch image:", error);
+                        return null;
+                      }
+                    })
+                  );
+                  return { ...demand, images: formattedImages };
+                })
+              );
+              return {
+                ...transaction,
+                offers: formattedOffers,
+                demands: formattedDemands,
+              };
+            })
+          );
+          setTransactions(formattedTransactions);
+          setLoading(false);
+        }
       } catch (error) {
         setLoading(false);
         console.error("Failed to fetch transaction history:", error);
@@ -84,7 +87,7 @@ const TransactionPage = () => {
     };
 
     fetchTransactions();
-  }, [currentUser]);
+  }, []);
 
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);

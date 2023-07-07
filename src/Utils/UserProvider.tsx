@@ -10,6 +10,7 @@ interface UserContextProps {
   setCurrentUser?: React.Dispatch<React.SetStateAction<User | null>>;
   loading: boolean; // Add a loading state to the context
   setLoading: React.Dispatch<React.SetStateAction<boolean>>;
+  refreshToken: () => Promise<void>;
 }
 interface UserProviderProps {
   children: ReactNode;
@@ -23,10 +24,23 @@ export const UserContext = createContext<UserContextProps>({
   setLoading: () => {
     throw new Error("setLoading function must be overridden");
   },
+  refreshToken: async () => {
+    throw new Error("refreshToken function must be overridden");
+  },
 }); // Initialize loading to true
 export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true); // Set initial loading state to true
+  const refreshToken = async () => {
+    const firebaseUser = auth.currentUser;
+    if (firebaseUser) {
+      const freshToken = await firebaseUser.getIdToken(true);
+      const freshConfig = {
+        headers: { Authorization: `Bearer ${freshToken}` },
+      };
+      setCurrentUser({ ...currentUser, config: freshConfig } as any);
+    }
+  };
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
@@ -98,7 +112,7 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
 
   return (
     <UserContext.Provider
-      value={{ currentUser, setCurrentUser, loading, setLoading }}
+      value={{ currentUser, setCurrentUser, loading, setLoading, refreshToken }}
     >
       {!loading && children}
     </UserContext.Provider>

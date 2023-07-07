@@ -13,7 +13,7 @@ import { LoadingScreen } from "../Components/LoadingScreen";
 const HomePage = () => {
   const [listings, setListings] = useState<Listing[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const { currentUser } = useContext(UserContext);
+  const { currentUser, refreshToken } = useContext(UserContext);
   const { setBreadcrumbs } = useContext(BreadcrumbContext);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
@@ -22,6 +22,7 @@ const HomePage = () => {
       try {
         if (currentUser) {
           setBreadcrumbs([{ path: "/", breadcrumbName: "Home" }]);
+          await refreshToken();
           const response = await axios.get(
             `${import.meta.env.VITE_APP_API_URL}/api/listing/others/${
               currentUser._id
@@ -58,7 +59,7 @@ const HomePage = () => {
     };
 
     fetchListings();
-  }, [currentUser]);
+  }, []);
 
   const handleSearchChange = (event: any) => {
     setSearchTerm(event.target.value);
