@@ -1,13 +1,4 @@
 Trading Up: Peer-to-Peer Bartering App
-Table of Contents
-
-    About
-    Features
-    Technologies Used
-    Installation
-    Usage
-    Contribution
-    License
 
 About
 
@@ -28,43 +19,6 @@ Technologies Used
     Database: MongoDB
     Authentication: JWT
     Real-time Chat: Socket.io
-
-Installation
-
-Before starting, make sure you have Node.js and npm installed.
-
-    Clone the repository:
-
-    sh
-
-git clone https://github.com/yourusername/TradingUp.git
-
-Navigate to the project directory:
-
-sh
-
-cd TradingUp
-
-Install dependencies:
-
-sh
-
-npm install
-
-Start the development server:
-
-sh
-
-    npm start
-
-Visit http://localhost:3000 in your web browser.
-Usage
-
-    Sign Up / Log In: Use your email to create a new account or log into your existing account.
-    Browse Listings: Use the search and filter features to find the item you're interested in.
-    Chat & Negotiate: Use the in-app chat to negotiate the terms of the trade.
-    Complete the Trade: Meet up and swap the items.
-    Rate Your Experience: Use the review system to provide feedback.
 
 Contribution
 
